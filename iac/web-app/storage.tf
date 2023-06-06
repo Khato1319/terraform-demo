@@ -18,34 +18,6 @@ resource "aws_s3_bucket_versioning" "logs" {
   }
 }
 
-resource "aws_s3_bucket_policy" "logs" {
-  bucket   = aws_s3_bucket.logs.id
-
-     policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "AllowCloudFrontToPutLogs",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "cloudfront.amazonaws.com"
-      },
-      "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::logs.${var.domain_name}/*",
-      "Condition": {
-        "StringEquals": {
-          "aws:SourceArn": [
-            "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website["root"].id}",
-            "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website["www"].id}"
-          ]
-        }
-      }
-    }
-  ]
-}
-POLICY
-}
 locals {
   bucket_ids = {
     www  = aws_s3_bucket.www.id
@@ -57,8 +29,8 @@ locals {
   }
 
   bucket_policies = {
-    www  = templatefile("${path.module}/files/s3-policy.json", { bucket = "www.${var.domain_name}", account_id = data.aws_caller_identity.current.account_id, cloudfront_id = aws_cloudfront_distribution.website["www"].id })
-    root = templatefile("${path.module}/files/s3-policy.json", { bucket = "${var.domain_name}", account_id = data.aws_caller_identity.current.account_id, cloudfront_id = aws_cloudfront_distribution.website["root"].id })
+    www  = templatefile("${path.module}/files/s3-policy.json", { bucket = "www.${var.domain_name}", account_id = data.aws_caller_identity.current.account_id})
+    root = templatefile("${path.module}/files/s3-policy.json", { bucket = "${var.domain_name}", account_id = data.aws_caller_identity.current.account_id })
   }
 }
 resource "aws_s3_bucket_ownership_controls" "website" {
@@ -78,22 +50,8 @@ resource "aws_s3_bucket_public_access_block" "website_allow_access" {
   restrict_public_buckets = false
 
   depends_on = [aws_s3_bucket.root, aws_s3_bucket.www, aws_s3_bucket.logs]
-  lifecycle {
-    ignore_changes = [block_public_acls, block_public_policy, ignore_public_acls, restrict_public_buckets]
-  }
+
 }
-
-# resource "aws_s3_bucket_public_access_block" "website_block_access" {
-#   for_each = merge(local.bucket_ids, local.log_bucket_id)
-#   bucket   = each.value
-
-#   block_public_acls       = true
-#   block_public_policy     = true
-#   ignore_public_acls      = true
-#   restrict_public_buckets = true
-
-#   depends_on = [aws_s3_bucket_policy.website]
-# }
 
 data "aws_caller_identity" "current" {}
 

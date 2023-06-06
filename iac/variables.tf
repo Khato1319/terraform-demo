@@ -15,6 +15,6 @@ variable "static_website_directory" {
 variable "domain_name" {
   description = "Domain name"
   type        = string
-  default     = "cloudinventorymanagement.com"
+  default     = "examplewebsitefordemo.com"
 }
 
