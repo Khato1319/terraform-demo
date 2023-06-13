@@ -9,13 +9,16 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = "us-east-1"
+}
+
 
 
 module "web_app_1" {
   source = "./web-app"
 
   # Input Variables
-  region = var.region
   domain_name             = var.domain_name
   static_website_directory = var.static_website_directory
 }

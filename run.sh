@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cd frontend/src
+cd frontend/src || exit
 npm run build
 npm run export
-cd ../../iac
+cd ../../iac || exit
 terraform init && terraform apply --auto-approve

@@ -25,8 +25,8 @@ locals {
   }
 
   bucket_policies = {
-    www  = templatefile("${path.module}/files/s3-policy.json", { bucket = "www.${var.domain_name}", account_id = data.aws_caller_identity.current.account_id})
-    root = templatefile("${path.module}/files/s3-policy.json", { bucket = "${var.domain_name}", account_id = data.aws_caller_identity.current.account_id })
+    www  = templatefile("${path.module}/files/s3-policy.json", { bucket = "www.${var.domain_name}"})
+    root = templatefile("${path.module}/files/s3-policy.json", { bucket = "${var.domain_name}"})
   }
 }
 resource "aws_s3_bucket_ownership_controls" "website" {
@@ -48,8 +48,6 @@ resource "aws_s3_bucket_public_access_block" "website_allow_access" {
   depends_on = [aws_s3_bucket.root, aws_s3_bucket.www, aws_s3_bucket.logs]
 
 }
-
-data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket_policy" "website" {
   for_each = local.bucket_ids
@@ -107,6 +105,7 @@ resource "aws_s3_bucket_website_configuration" "logs" {
 }
 
 module "template_files" {
+  version = "1.0.2"
   source   = "hashicorp/dir/template"
   base_dir = var.static_website_directory
 }
