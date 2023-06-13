@@ -24,10 +24,6 @@ locals {
     root = aws_s3_bucket.root.id
   }
 
-  log_bucket_id = {
-    log = aws_s3_bucket.logs.id
-  }
-
   bucket_policies = {
     www  = templatefile("${path.module}/files/s3-policy.json", { bucket = "www.${var.domain_name}", account_id = data.aws_caller_identity.current.account_id})
     root = templatefile("${path.module}/files/s3-policy.json", { bucket = "${var.domain_name}", account_id = data.aws_caller_identity.current.account_id })
@@ -74,7 +70,7 @@ resource "aws_s3_bucket_cors_configuration" "website" {
   cors_rule {
     allowed_headers = ["Authorization", "Content-Length"]
     allowed_methods = ["GET", "POST"]
-    allowed_origins = ["https://www.${var.domain_name}"] // En realidad, seria solo nuestro domain_name
+    allowed_origins = ["https://www.${var.domain_name}"]
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
